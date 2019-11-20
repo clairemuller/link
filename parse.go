@@ -1,7 +1,6 @@
 package link
 
 import (
-	"fmt"
 	"io"
 
 	"golang.org/x/net/html"
@@ -19,6 +18,7 @@ type Link struct {
 
 // Parse takes an HTML document and returns a slice of links parsed from it
 func Parse(r io.Reader) ([]Link, error) {
+	var links []Link
 	// html.Parse returns the root of the parse tree as a *Node from the given Reader
 	rootNode, err := html.Parse(r)
 	if err != nil {
@@ -26,12 +26,11 @@ func Parse(r io.Reader) ([]Link, error) {
 	}
 
 	nodes := linkNodes(rootNode)
-
 	for _, node := range nodes {
-		fmt.Println(node)
+		links = append(links, buildLink(node))
 	}
 
-	return nil, nil
+	return links, nil
 }
 
 // takes in root node, returns all link nodes
@@ -44,4 +43,20 @@ func linkNodes(n *html.Node) []*html.Node {
 		nodeSlice = append(nodeSlice, linkNodes(c)...)
 	}
 	return nodeSlice
+}
+
+func buildLink(n *html.Node) Link {
+	var link Link
+
+	// the node's attributes are stored in a slice, have to loop over them
+	// Namespace, Key, Val string
+	for _, attr := range n.Attr {
+		if attr.Key == "href" {
+			link.Href = attr.Val
+			break
+		}
+	}
+	link.Text = "TODO: Parse the text"
+
+	return link
 }
