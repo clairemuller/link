@@ -2,6 +2,7 @@ package link
 
 import (
 	"io"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -45,6 +46,7 @@ func linkNodes(n *html.Node) []*html.Node {
 	return nodeSlice
 }
 
+// takes in a link node and returns a Link struct
 func buildLink(n *html.Node) Link {
 	var link Link
 
@@ -56,7 +58,24 @@ func buildLink(n *html.Node) Link {
 			break
 		}
 	}
-	link.Text = "TODO: Parse the text"
+	link.Text = text(n)
 
 	return link
+}
+
+// takes in a link node and returns the text inside it
+func text(n *html.Node) string {
+	// if it's a text node, just return its data
+	if n.Type == html.TextNode {
+		return n.Data
+	}
+	// if it's not a tag, we don't want it, return empty string
+	if n.Type != html.ElementNode {
+		return ""
+	}
+	var str string
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		str += text(c) + " "
+	}
+	return strings.Join(strings.Fields(str), " ")
 }
